@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <title>SID - Consulta de Activos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="../static/styles/main.css" />
+  <link rel="stylesheet" href="{% static 'styles/main.css' %}" />
 </head>
 <body>
   <div class="container">
@@ -30,10 +30,10 @@
       <span id="login-status" class="status"></span>
     </div>
 
-    <!-- APP PRINCIPAL -->
+    <!-- APP MAIN -->
     <div id="app-section" class="hidden">
       <div class="row">
-        <!-- Columna izquierda: QR + manual -->
+        <!-- Columna QR + búsqueda manual -->
         <div class="col">
           <div class="card">
             <div class="section-title">Escaneo de código QR</div>
@@ -54,8 +54,29 @@
             <div id="manual-status" class="status"></div>
           </div>
         </div>
+        
+        <!-- Sección para crear qr unico -->
+        <div class="card">
+        <div class="section-title">Generar QR de un activo</div>
+            <p class="subtitle">
+                Ingresa el código del activo para generar su QR único.
+            </p>
 
-        <!-- Columna derecha: Datos del activo -->
+            <label for="codigo-qr">Código del activo</label>
+            <input id="codigo-qr" type="text" placeholder="Ej: 1, 2, 3..." />
+
+            <button id="btn-generar-qr" class="btn">Generar QR</button>
+
+            <div id="qr-status" class="status"></div>
+
+            <div id="qr-preview" style="margin-top: 10px; text-align:center;"></div>
+
+            <a id="qr-download" href="#" download style="display:none;">
+                <button class="btn secondary" style="margin-top:10px;">Descargar QR</button>
+            </a>
+        </div>
+
+        <!-- Sección para mostrar un resumen de los datos del activo, más agradable a la vista -->
         <div class="col">
           <div class="card">
             <div class="section-title">Datos del activo</div>
@@ -67,9 +88,7 @@
     </div>
   </div>
 
-  <!-- Librería para escanear QR -->
   <script src="https://unpkg.com/html5-qrcode"></script>
-  <!-- Tu script principal -->
-  <script src="../static/js/main.js"></script>
+  <script src="{% static 'styles/js/main.js' %}"></script>
 </body>
 </html>

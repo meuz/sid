@@ -1,0 +1,75 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>SID - Consulta de Activos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../static/styles/main.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>
+      SID - Consulta de Activos
+      <span class="tag">Demo WebService</span>
+    </h1>
+
+    <!-- LOGIN -->
+    <div id="login-section" class="card">
+      <div class="section-title">Inicio de sesión</div>
+      <p class="subtitle">
+        Ingresa con tu usuario y contraseña de Django para obtener un token JWT.
+      </p>
+      <label for="username">Usuario</label>
+      <input id="username" type="text" placeholder="ej: admin" />
+
+      <label for="password">Contraseña</label>
+      <input id="password" type="password" placeholder="••••••••" />
+
+      <button id="btn-login">Iniciar sesión</button>
+      <span id="login-status" class="status"></span>
+    </div>
+
+    <!-- APP PRINCIPAL -->
+    <div id="app-section" class="hidden">
+      <div class="row">
+        <!-- Columna izquierda: QR + manual -->
+        <div class="col">
+          <div class="card">
+            <div class="section-title">Escaneo de código QR</div>
+            <p class="subtitle">
+              El QR debe contener el <strong>código del activo</strong> (en esta demo, un número que coincide con el ID de FakeStoreAPI: 1, 2, 3, ...).
+            </p>
+            <div id="reader"></div>
+            <button id="btn-start-scan" class="btn">Iniciar cámara</button>
+            <button id="btn-stop-scan" class="btn secondary">Detener cámara</button>
+            <div id="scan-status" class="status"></div>
+          </div>
+
+          <div class="card">
+            <div class="section-title">Búsqueda manual</div>
+            <label for="codigo-manual">Código de activo</label>
+            <input id="codigo-manual" type="text" placeholder="Ej: 1, 2, 3..." />
+            <button id="btn-buscar" class="btn">Buscar activo</button>
+            <div id="manual-status" class="status"></div>
+          </div>
+        </div>
+
+        <!-- Columna derecha: Datos del activo -->
+        <div class="col">
+          <div class="card">
+            <div class="section-title">Datos del activo</div>
+            <div id="activo-resumen" class="resumen"></div>
+            <div id="activo-json" class="activo-data">Sin datos todavía…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Librería para escanear QR -->
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <!-- Tu script principal -->
+  <script src="../static/js/main.js"></script>
+</body>
+</html>

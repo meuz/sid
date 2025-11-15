@@ -1,5 +1,8 @@
+// ==========================
+//  CONFIG
+// ==========================
 const API_BASE = "";           // mismo origen donde se sirve Django
-const TOKEN_KEY = "sid_token"; // clave para localStorage
+const TOKEN_KEY = "sid_token"; // clave para sessionStorage
 
 let accessToken = null;
 let html5QrCode = null;
@@ -7,7 +10,9 @@ let currentCameraId = null;
 let isScanBusy = false;
 let lastDecodedText = null;
 
-
+// ==========================
+//  ELEMENTOS DEL DOM
+// ==========================
 const loginSection = document.getElementById("login-section");
 const appSection = document.getElementById("app-section");
 
@@ -22,6 +27,7 @@ const btnLogin = document.getElementById("btn-login");
 const btnStartScan = document.getElementById("btn-start-scan");
 const btnStopScan = document.getElementById("btn-stop-scan");
 const btnBuscar = document.getElementById("btn-buscar");
+const btnLogout = document.getElementById("btn-logout");
 
 const inputUser = document.getElementById("username");
 const inputPass = document.getElementById("password");
@@ -35,16 +41,54 @@ const qrDownload = document.getElementById("qr-download");
 
 console.log("main.js cargado correctamente ✅");
 
-// restaura un token si existe
-const savedToken = localStorage.getItem(TOKEN_KEY);
-if (savedToken) {
-  accessToken = savedToken;
-  console.log("🔁 Token restaurado desde localStorage");
-  loginSection.classList.add("hidden");
-  appSection.classList.remove("hidden");
+
+// ==========================
+//  FUNCIONES AUXILIARES
+// ==========================
+function hacerLogout(mensaje) {
+  accessToken = null;
+  sessionStorage.removeItem(TOKEN_KEY);
+
+  // Ocultar app, mostrar login
+  appSection.classList.add("hidden");
+  loginSection.classList.remove("hidden");
+
+  // Limpiar estados
+  scanStatus.textContent = "";
+  manualStatus.textContent = "";
+  qrStatus.textContent = "";
+  activoResumen.textContent = "";
+  activoJson.textContent = "Sin datos todavía…";
+
+  // Ocultar botón logout
+  btnLogout.classList.add("hidden");
+
+  if (mensaje) {
+    loginStatus.textContent = mensaje;
+    loginStatus.className = "status error";
+  } else {
+    loginStatus.textContent = "Sesión cerrada correctamente.";
+    loginStatus.className = "status success";
+  }
 }
 
 
+// ==========================
+//  RESTAURAR TOKEN SI EXISTE (solo mientras la pestaña viva)
+// ==========================
+const savedToken = sessionStorage.getItem(TOKEN_KEY);
+if (savedToken) {
+  accessToken = savedToken;
+  console.log("🔁 Token restaurado desde sessionStorage");
+  loginSection.classList.add("hidden");
+  appSection.classList.remove("hidden");
+  btnLogout.classList.remove("hidden");
+}
+
+
+// ==========================
+//  LOGIN
+// ==========================
 btnLogin.addEventListener("click", async () => {
   console.log("➡️ Click en Iniciar sesión");
 
@@ -86,15 +130,18 @@ btnLogin.addEventListener("click", async () => {
     const data = await res.json();
     accessToken = data.access;
 
-    localStorage.setItem(TOKEN_KEY, accessToken);
+    // guardar en sessionStorage (solo vive mientras la pestaña esté abierta)
+    sessionStorage.setItem(TOKEN_KEY, accessToken);
 
     console.log("🔑 Token recibido:", accessToken);
 
     loginStatus.textContent = "Sesión iniciada correctamente.";
     loginStatus.classList.add("success");
 
+    // Mostrar app y ocultar login
     loginSection.classList.add("hidden");
     appSection.classList.remove("hidden");
+    btnLogout.classList.remove("hidden");
   } catch (err) {
     console.error("❌ Error al iniciar sesión:", err);
     loginStatus.textContent = "Error de red al intentar iniciar sesión.";
@@ -104,6 +151,18 @@ btnLogin.addEventListener("click", async () => {
   }
 });
 
+
+// ==========================
+//  LOGOUT
+// ==========================
+btnLogout.addEventListener("click", () => {
+  hacerLogout(null);
+});
+
+
+// ==========================
+//  CONSULTAR ACTIVO
+// ==========================
 async function consultarActivo(codigo) {
   if (!accessToken) {
     manualStatus.textContent = "Debes iniciar sesión primero.";
@@ -131,23 +190,11 @@ async function consultarActivo(codigo) {
 
     console.log("➡️ Respuesta activos HTTP:", res.status);
 
-    // si el token no es válido o no llegó, el backend responde 401
+    // Si el token no es válido o no llegó, el backend responde 401
     if (res.status === 401) {
       const errData = await res.json().catch(() => ({}));
       console.warn("⚠️ No autorizado:", errData);
-
-      manualStatus.textContent =
-        "Tu sesión ha expirado o el token no es válido. Inicia sesión nuevamente.";
-      manualStatus.classList.add("error");
-
-      // limpiar token en memoria y localStorage
-      accessToken = null;
-      localStorage.removeItem(TOKEN_KEY);
-
-      // ocultar app y mostrar login
-      appSection.classList.add("hidden");
-      loginSection.classList.remove("hidden");
-
+      hacerLogout("Tu sesión ha expirado o el token no es válido. Inicia sesión nuevamente.");
       return;
     }
 
@@ -164,6 +211,7 @@ async function consultarActivo(codigo) {
 
     const data = await res.json();
 
+    // --------- Resumen amigable (fake inventario + FakeStore) ----------
     const partes = [];
 
     // Nombre
@@ -177,7 +225,7 @@ async function consultarActivo(codigo) {
       );
     }
 
-    // Sistema operativo simulado
+    // Sistema operativo
     if (data.so) {
       partes.push(`<strong>Sistema operativo:</strong> ${data.so}`);
     }
@@ -323,7 +371,6 @@ btnStopScan.addEventListener("click", async () => {
     return;
   }
 
-  // html5-qrcode moderno usa .isScanning (sin _)
   const scanning = html5QrCode.isScanning ?? html5QrCode._isScanning;
 
   if (!scanning) {
@@ -334,7 +381,7 @@ btnStopScan.addEventListener("click", async () => {
 
   try {
     await html5QrCode.stop();
-    await html5QrCode.clear(); // limpia el <div id="reader">
+    await html5QrCode.clear();
     scanStatus.textContent = "Cámara detenida.";
     scanStatus.classList.add("success");
   } catch (err) {
@@ -343,7 +390,6 @@ btnStopScan.addEventListener("click", async () => {
     scanStatus.classList.add("error");
   }
 });
-
 
 
 // ==========================
@@ -381,14 +427,7 @@ btnGenerarQR.addEventListener("click", async () => {
     });
 
     if (res.status === 401) {
-      qrStatus.textContent =
-        "Tu sesión ha expirado o el token no es válido. Inicia sesión nuevamente.";
-      qrStatus.classList.add("error");
-
-      accessToken = null;
-      localStorage.removeItem(TOKEN_KEY);
-      appSection.classList.add("hidden");
-      loginSection.classList.remove("hidden");
+      hacerLogout("Tu sesión ha expirado o el token no es válido. Inicia sesión nuevamente.");
       return;
     }
 

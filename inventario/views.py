@@ -46,8 +46,8 @@ def obtener_activo_bd(codigo):
     return {
         "id": data["id"],
         "nombre": data["title"],
-        "serial": data["category"],
-        "ubicacion": "No aplica (FakeStoreAPI)"
+        "categoria": data["category"],
+        "precio": data["price"],
     }
 
 

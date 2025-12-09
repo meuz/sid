@@ -39,6 +39,14 @@ const qrStatus = document.getElementById("qr-status");
 const qrPreview = document.getElementById("qr-preview");
 const qrDownload = document.getElementById("qr-download");
 
+// Elementos para reporte de activos
+const btnReporte = document.getElementById("btn-reporte");
+const filtroEdificio = document.getElementById("filtro-edificio");
+const filtroArea = document.getElementById("filtro-area");
+const filtroDepartamento = document.getElementById("filtro-departamento");
+const reporteStatus = document.getElementById("reporte-status");
+const reporteJson = document.getElementById("reporte-json");
+
 console.log("main.js cargado correctamente ✅");
 
 
@@ -211,7 +219,7 @@ async function consultarActivo(codigo) {
 
     const data = await res.json();
 
-    // --------- Resumen amigable (fake inventario + FakeStore) ----------
+    // --------- Resumen amigable ----------
     const partes = [];
 
     // Nombre
@@ -457,3 +465,80 @@ btnGenerarQR.addEventListener("click", async () => {
     qrStatus.classList.add("error");
   }
 });
+
+
+// ==========================
+//  REPORTE DE ACTIVOS
+// ==========================
+if (btnReporte) {
+  console.log("🧩 Handler de Reporte de Activos activado correctamente.");
+
+  btnReporte.addEventListener("click", async () => {
+    console.log("➡️ Click en Ver reporte");
+
+    if (!accessToken) {
+      reporteStatus.textContent = "Debes iniciar sesión primero.";
+      reporteStatus.className = "status error";
+      return;
+    }
+
+    reporteStatus.textContent = "Obteniendo reporte...";
+    reporteStatus.className = "status";
+    reporteJson.textContent = "";
+
+    const params = new URLSearchParams();
+    const edificio = filtroEdificio.value.trim();
+    const area = filtroArea.value.trim();
+    const departamento = filtroDepartamento.value.trim();
+
+    if (edificio) params.append("edificio", edificio);
+    if (area) params.append("area", area);
+    if (departamento) params.append("departamento", departamento);
+
+    const url =
+      "/api/reportes/activos/" + (params.toString() ? "?" + params.toString() : "");
+
+    console.log("📡 Llamando a:", url);
+
+    try {
+      const res = await fetch(url, {
+        headers: {
+          Authorization: "Bearer " + accessToken,
+        },
+      });
+
+      let data;
+      try {
+        data = await res.json();
+      } catch (e) {
+        console.error("❌ Respuesta no es JSON válido:", e);
+        reporteStatus.textContent = "La respuesta no es JSON válido";
+        reporteStatus.className = "status error";
+        return;
+      }
+
+      if (!res.ok) {
+        const msg = data.error || data.detail || `Error ${res.status}`;
+        console.warn("⚠️ Error desde backend:", msg);
+        reporteStatus.textContent = msg;
+        reporteStatus.className = "status error";
+        reporteJson.textContent = "";
+        return;
+      }
+
+      // OK
+      reporteStatus.textContent = "Reporte obtenido correctamente.";
+      reporteStatus.className = "status success";
+      reporteJson.textContent = JSON.stringify(data, null, 2);
+
+      console.log("✅ Reporte recibido:", data);
+    } catch (err) {
+      console.error("❌ Error al obtener reporte:", err);
+      reporteStatus.textContent = "Error de red al obtener el reporte.";
+      reporteStatus.className = "status error";
+      reporteJson.textContent = "";
+    }
+  });
+} else {
+  console.warn("⚠️ btn-reporte no encontrado en el DOM");
+}

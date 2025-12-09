@@ -90,6 +90,35 @@
             <div id="activo-json" class="activo-data">Sin datos todavía…</div>
           </div>
         </div>
+                <!-- Sección de reporte de activos -->
+        <div class="col">
+          <div class="card">
+            <div class="section-title">Reporte de activos</div>
+            <p class="subtitle">
+              Puedes filtrar por edificio, área y departamento. Si dejas todo vacío,
+              se listarán todos los activos registrados.
+            </p>
+
+            <label for="filtro-edificio">Edificio</label>
+            <input id="filtro-edificio" type="text" placeholder="Ej: Edificio A" />
+
+            <label for="filtro-area">Área</label>
+            <input id="filtro-area" type="text" placeholder="Ej: Urgencias" />
+
+            <label for="filtro-departamento">Departamento</label>
+            <input id="filtro-departamento" type="text" placeholder="Ej: Box 1" />
+
+            <button id="btn-reporte" class="btn" style="margin-top:8px;">
+              Ver reporte
+            </button>
+
+            <div id="reporte-status" class="status"></div>
+
+            <pre id="reporte-json" class="activo-data" style="margin-top:10px;">
+                Sin datos de reporte todavía…
+            </pre>
+          </div>
+        </div>
       </div>
     </div>
   </div>

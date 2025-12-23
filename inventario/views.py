@@ -12,6 +12,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import permissions, status
 
+from .permissions import IsAdminOrJefeOrTecnico
+from .permissions import IsAdminOrTecnico
+from .permissions import IsAdminOrJefe
+
+
 OCS_API_BASE = "http://192.168.1.10:5001/ocs-api"
 ESTADOS_VALIDOS = ["activo", "inactivo", "en_mantencion", "de_baja"]
 
@@ -70,7 +75,7 @@ def obtener_activo_bd(codigo):
         return None
 
 @api_view(["PATCH"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAdminOrTecnico])
 def actualizar_estado_activo(request, codigo):
     nuevo_estado = request.data.get("estado")
 
@@ -104,7 +109,8 @@ class FrontendView(TemplateView):
 
 #  API: CONSULTA SEGURA DE ACTIVOS
 class ActivoSeguroView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAdminOrJefeOrTecnico]
 
     def get(self, request, codigo):
 
@@ -139,7 +145,8 @@ class ActivoSeguroView(APIView):
 
 #  API generacion del QR
 class ActivoQRSeguroView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAdminOrTecnico]
 
     def get(self, request, codigo):
 
@@ -191,7 +198,8 @@ class QRPageView(TemplateView):
         return ctx
 
 class ReporteActivosView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAdminOrJefe]
 
     def get(self, request):
         edificio = request.query_params.get("edificio")

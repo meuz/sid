@@ -435,3 +435,21 @@ input:focus {
   text-decoration: underline;
 }
 
+/* Branding SID */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-logo {
+  height: 36px;
+  width: auto;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+

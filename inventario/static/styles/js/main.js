@@ -54,6 +54,9 @@ const filtroArea = document.getElementById("filtro-area");
 const filtroDepartamento = document.getElementById("filtro-departamento");
 const reporteStatus = document.getElementById("reporte-status");
 const reporteJson = document.getElementById("reporte-json");
+const reporteTabla = document.getElementById("reporte-tabla");
+const reporteResumen = document.getElementById("reporte-resumen");
+
 
 // Elementos para CAMBIO DE ESTADO
 const btnEditarEstado   = document.getElementById("btn-editar-estado");
@@ -721,6 +724,12 @@ if (btnReporte) {
       // Mostramos el JSON técnico
       reporteJson.textContent = JSON.stringify(activos, null, 2);
 
+      if (reporteResumen) {
+        reporteResumen.textContent = `Mostrando ${activos.length} activos.`;
+      }
+
+      renderReporteTabla(activos);
+
       reporteStatus.textContent = `Reporte obtenido correctamente. Activos encontrados: ${activos.length}.`;
       reporteStatus.className = "status success";
 
@@ -833,3 +842,71 @@ function descargarCsvActivos(activos) {
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
+
+function renderReporteTabla(activos) {
+  if (!reporteTabla) return;
+
+  if (!activos || !activos.length) {
+    reporteTabla.classList.add("hidden");
+    return;
+  }
+
+  let html = `
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Ubicación</th>
+          <th>Estado</th>
+          <th>Equipo</th>
+          <th>SO</th>
+          <th>Último inventario</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  for (const a of activos) {
+    const ubicacion = [a.edificio, a.area, a.departamento]
+      .filter(Boolean)
+      .join(" / ");
+
+    const estado = a.estado
+      ? a.estado.replace(/_/g, " ")
+      : "";
+
+    const so = [a.so, a.so_version].filter(Boolean).join(" ");
+
+    html += `
+      <tr>
+        <td>
+          <a href="#" class="link-activo" data-codigo="${a.codigo}">
+            ${a.codigo}
+          </a>
+        </td>
+        <td>${ubicacion}</td>
+        <td>${estado}</td>
+        <td>${a.nombre_equipo || "-"}</td>
+        <td>${so || "-"}</td>
+        <td>${a.ultimo_contacto || "-"}</td>
+      </tr>
+    `;
+  }
+
+  html += `
+      </tbody>
+    </table>
+  `;
+
+  reporteTabla.innerHTML = html;
+  reporteTabla.classList.remove("hidden");
+
+  // Click en código → abre ficha del activo
+  reporteTabla.querySelectorAll(".link-activo").forEach(link => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      consultarActivo(link.dataset.codigo);
+    });
+  });
+}
+

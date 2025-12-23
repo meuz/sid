@@ -374,3 +374,64 @@ input:focus {
   background: #ffffff;
   font-size: 0.9rem;
 }
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  min-width: 760px;
+  font-size: 0.9rem;
+}
+
+.table th, .table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #eef2f7;
+  text-align: left;
+  white-space: nowrap;
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.table th {
+  font-weight: 600;
+  color: #374151;
+  background: #f9fafb;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.table tr:hover td {
+  background: #f9fafb;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  border: 1px solid #e5e7eb;
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.chip.ok { background: #dcfce7; color: #166534; border-color: #86efac; }
+.chip.warn { background: #fef9c3; color: #854d0e; border-color: #fde047; }
+.chip.bad { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+
+.linklike {
+  color: #2563eb;
+  cursor: pointer;
+  text-decoration: underline;
+}
+

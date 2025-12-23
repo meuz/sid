@@ -221,6 +221,12 @@ input:focus {
   margin-top: 10px;
 }
 
+#btn-logout:hover {
+  background-color: #dc2626;   /* rojo elegante */
+  color: #ffffff;
+  border-color: #dc2626;
+}
+
 /* Estados / mensajes */
 .status {
   font-size: 0.8rem;

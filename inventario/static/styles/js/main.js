@@ -67,6 +67,17 @@ const estadoStatus      = document.getElementById("estado-status");
 
 console.log("main.js cargado correctamente ✅");
 
+// ==========================
+//  ENTER PARA LOGIN
+// ==========================
+const loginForm = document.getElementById("login-form");
+
+if (loginForm) {
+  loginForm.addEventListener("submit", (e) => {
+    e.preventDefault(); // evita recargar la página
+    btnLogin.click();   // reutiliza tu login actual
+  });
+}
 
 // ==========================
 //  FUNCIONES AUXILIARES

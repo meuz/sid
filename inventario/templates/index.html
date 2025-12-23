@@ -42,21 +42,22 @@
           </div>
 
           <div class="card-body">
-            <label for="username">Usuario</label>
-            <input id="username" type="text" placeholder="ej: admin" />
+            <form id="login-form">
+              <label for="username">Usuario</label>
+              <input id="username" type="text" placeholder="ej: tecnicotest" />
 
-            <label for="password">Contraseña</label>
-            <input id="password" type="password" placeholder="••••••••" />
+              <label for="password">Contraseña</label>
+              <input id="password" type="password" placeholder="••••••••" />
 
-            <button id="btn-login" class="btn btn-primary full-width">
-              Iniciar sesión
-            </button>
+              <button id="btn-login" class="btn btn-primary full-width">
+                Iniciar sesión
+              </button>
 
-            <span id="login-status" class="status"></span>
+              <span id="login-status" class="status"></span>
+            </form>
           </div>
         </section>
 
-        <!-- APP MAIN -->
         <!-- APP MAIN -->
         <section id="app-section" class="hidden">
           <div class="grid">
@@ -84,7 +85,7 @@
                 </div>
               </div>
 
-              <!-- Búsqueda manual -->
+              <!-- Busqueda manual -->
               <div class="card">
                 <div class="card-header">
                   <h2 class="section-title">Búsqueda manual</h2>
@@ -99,7 +100,7 @@
                 </div>
               </div>
 
-              <!-- Datos del activo + botón Cambiar estado -->
+              <!-- Datos del activo + boton Cambiar estado -->
               <div class="card">
                 <div class="card-header card-header-inline">
                   <h2 class="section-title">Datos del activo</h2>
@@ -110,7 +111,7 @@
                 </div>
 
                 <div class="card-body">
-                  <!-- Editor de estado (se muestra/oculta) -->
+                  <!-- Editor de estado -->
                   <div id="estado-editor" class="estado-editor hidden">
                     <label for="select-estado">Nuevo estado</label>
                     <div class="estado-row">

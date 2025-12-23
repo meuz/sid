@@ -83,6 +83,29 @@ if (loginForm) {
 //  FUNCIONES AUXILIARES
 // ==========================
 function hacerLogout(mensaje) {
+  // =========================
+  //  DETENER CÁMARA QR
+  // =========================
+  if (html5QrCode) {
+    try {
+      // Compatibilidad con varias versiones de html5-qrcode
+      if (html5QrCode._isScanning || html5QrCode.isScanning === true) {
+        html5QrCode.stop()
+          .then(() => html5QrCode.clear())
+          .catch(() => {});
+      }
+    } catch (e) {
+      console.warn("No se pudo detener la cámara:", e);
+    }
+  }
+
+  // Reset flags del escaneo
+  isScanBusy = false;
+  lastDecodedText = null;
+
+  // =========================
+  //  TOKEN / UI
+  // =========================
   accessToken = null;
   sessionStorage.removeItem(TOKEN_KEY);
 
@@ -144,6 +167,7 @@ function hacerLogout(mensaje) {
     loginStatus.className = "status success";
   }
 }
+
 
 
 

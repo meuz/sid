@@ -9,10 +9,13 @@ from django.http import HttpResponse
 from django.views.generic import TemplateView
 
 from rest_framework.views import APIView
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import permissions, status
 
-OCS_API_BASE = "http://192.168.1.12:5001/ocs-api"
+OCS_API_BASE = "http://192.168.1.9:5001/ocs-api"
+ESTADOS_VALIDOS = ["activo", "inactivo", "en_mantencion", "de_baja"]
 
 #  AUDITORÍA 
 def registrar_evento(request, accion, descripcion):
@@ -45,12 +48,7 @@ def validar_codigo_activo(codigo):
 
 #  OBTENER ACTIVO DESDE WEBSERVICE (futuro: Flask OCS API)
 def obtener_activo_bd(codigo):
-    """
-    Llama a tu webservice Flask en el servidor OCS:
-    GET /ocs-api/activos/<codigo>/
 
-    Devuelve el JSON del activo o None si no existe / hay error.
-    """
     try:
         url = f"{OCS_API_BASE}/activos/{codigo}/"
         r = requests.get(url, timeout=3)
@@ -73,6 +71,34 @@ def obtener_activo_bd(codigo):
         print("Error llamando al OCS API:", e)
         return None
 
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
+def actualizar_estado_activo(request, codigo):
+    nuevo_estado = request.data.get("estado")
+
+    if nuevo_estado not in ESTADOS_VALIDOS:
+        return Response(
+            {"error": "Estado inválido"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        flask_url = f"{OCS_API_BASE}/activos/{codigo}/estado/"
+        r = requests.patch(flask_url, json={"estado": nuevo_estado}, timeout=5)
+    except requests.RequestException as e:
+        print("Error conectando con Flask:", e)
+        return Response(
+            {"error": "Error conectando con el webservice OCS"},
+            status=status.HTTP_502_BAD_GATEWAY,
+        )
+
+    # reenviamos la respuesta de Flask
+    try:
+        data = r.json()
+    except ValueError:
+        data = {"detail": r.text}
+
+    return Response(data, status=r.status_code)
 
 #  FRONTEND
 class FrontendView(TemplateView):

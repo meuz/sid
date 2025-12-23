@@ -10,6 +10,10 @@ let currentCameraId = null;
 let isScanBusy = false;
 let lastDecodedText = null;
 
+// Datos del activo actualmente seleccionado (para cambio de estado)
+let activoCodigoActual = null;
+let activoEstadoActual = null;
+
 // ==========================
 //  ELEMENTOS DEL DOM
 // ==========================
@@ -20,7 +24,8 @@ const loginStatus = document.getElementById("login-status");
 const scanStatus = document.getElementById("scan-status");
 const manualStatus = document.getElementById("manual-status");
 
-const activoResumen = document.getElementById("activo-resumen");
+const activoResumenSid = document.getElementById("activo-resumen-sid");
+const activoResumenOcs = document.getElementById("activo-resumen-ocs");
 const activoJson = document.getElementById("activo-json");
 
 const btnLogin = document.getElementById("btn-login");
@@ -40,12 +45,22 @@ const qrPreview = document.getElementById("qr-preview");
 const qrDownload = document.getElementById("qr-download");
 
 // Elementos para reporte de activos
+const btnDescargarCsv = document.getElementById("btn-descargar-csv");
+let ultimoReporteActivos = null; // aquí guardaremos el último reporte obtenido
+
 const btnReporte = document.getElementById("btn-reporte");
 const filtroEdificio = document.getElementById("filtro-edificio");
 const filtroArea = document.getElementById("filtro-area");
 const filtroDepartamento = document.getElementById("filtro-departamento");
 const reporteStatus = document.getElementById("reporte-status");
 const reporteJson = document.getElementById("reporte-json");
+
+// Elementos para CAMBIO DE ESTADO
+const btnEditarEstado   = document.getElementById("btn-editar-estado");
+const estadoEditor      = document.getElementById("estado-editor");
+const selectEstado      = document.getElementById("select-estado");
+const btnGuardarEstado  = document.getElementById("btn-guardar-estado");
+const estadoStatus      = document.getElementById("estado-status");
 
 console.log("main.js cargado correctamente ✅");
 
@@ -65,8 +80,25 @@ function hacerLogout(mensaje) {
   scanStatus.textContent = "";
   manualStatus.textContent = "";
   qrStatus.textContent = "";
-  activoResumen.textContent = "";
-  activoJson.textContent = "Sin datos todavía…";
+  if (activoResumenSid) activoResumenSid.innerHTML = "";
+  if (activoResumenOcs) activoResumenOcs.innerHTML = "";
+  if (activoJson) activoJson.textContent = "Sin datos todavía…";
+
+
+  // Reset de estado de activo
+  activoCodigoActual = null;
+  activoEstadoActual = null;
+
+  if (btnEditarEstado) {
+    btnEditarEstado.classList.add("hidden");
+  }
+  if (estadoEditor) {
+    estadoEditor.classList.add("hidden");
+  }
+  if (estadoStatus) {
+    estadoStatus.textContent = "";
+    estadoStatus.className = "status";
+  }
 
   // Ocultar botón logout
   btnLogout.classList.add("hidden");
@@ -151,9 +183,11 @@ btnLogin.addEventListener("click", async () => {
     appSection.classList.remove("hidden");
     btnLogout.classList.remove("hidden");
   } catch (err) {
-    console.error("❌ Error al iniciar sesión:", err);
-    loginStatus.textContent = "Error de red al intentar iniciar sesión.";
-    loginStatus.classList.add("error");
+    console.error("❌ Error real al consultar activo:", err);
+
+    const msg = (err && err.message) ? err.message : String(err);
+    manualStatus.textContent = "Error al consultar el activo: " + msg;
+    manualStatus.className = "status error";
   } finally {
     btnLogin.disabled = false;
   }
@@ -212,60 +246,115 @@ async function consultarActivo(codigo) {
         errData.detail || errData.error || `Error ${res.status}: ${res.statusText}`;
       manualStatus.textContent = msg;
       manualStatus.classList.add("error");
-      activoResumen.textContent = "";
-      activoJson.textContent = "Sin datos…";
+      if (activoResumenSid) activoResumenSid.innerHTML = "";
+      if (activoResumenOcs) activoResumenOcs.innerHTML = "";
+      if (activoJson) activoJson.textContent = "Sin datos…";
+
+
+      // Reset estado de activo
+      activoCodigoActual = null;
+      activoEstadoActual = null;
+      if (btnEditarEstado) btnEditarEstado.classList.add("hidden");
+      if (estadoEditor) estadoEditor.classList.add("hidden");
+      if (estadoStatus) {
+        estadoStatus.textContent = "";
+        estadoStatus.className = "status";
+      }
+
       return;
     }
 
     const data = await res.json();
 
-    // --------- Resumen amigable ----------
-    const partes = [];
+    // ==============================
+    // Guardar código y estado actual
+    // ==============================
+    activoCodigoActual = data.qr_valor || data.codigo || codigo;
+    activoEstadoActual = data.estado || data.estado_actual || "inactivo";
 
-    // Nombre
-    const nombre = data.nombre || data.title;
-    if (nombre) partes.push(`<strong>Nombre:</strong> ${nombre}`);
+    if (selectEstado) {
+      const validos = ["activo", "inactivo", "en_mantencion", "de_baja"];
+      selectEstado.value = validos.includes(activoEstadoActual)
+        ? activoEstadoActual
+        : "inactivo";
+    }
 
-    // Número de serie
-    if (data.numero_serie || data.serial) {
+    if (btnEditarEstado) {
+      btnEditarEstado.classList.remove("hidden");
+    }
+    if (estadoEditor) {
+      estadoEditor.classList.add("hidden"); // editor plegado por defecto
+    }
+    if (estadoStatus) {
+      estadoStatus.textContent = "";
+      estadoStatus.className = "status";
+    }
+
+    // --------- Resumen amigable (ficha limpia) ----------
+    function addField(partes, label, value) {
+      if (value === undefined || value === null || value === "") return;
       partes.push(
-        `<strong>Número de serie:</strong> ${data.numero_serie || data.serial}`
+        `<div class="field-row">
+          <span class="field-label">${label}</span>
+          <span class="field-value">${value}</span>
+        </div>`
       );
     }
 
-    // Sistema operativo
-    if (data.so) {
-      partes.push(`<strong>Sistema operativo:</strong> ${data.so}`);
+    const ocs = data.ocs || {};
+
+    const codigoActivo = data.qr_valor || data.codigo || codigo;
+    const ubicacion = [data.edificio, data.area, data.departamento]
+      .filter(Boolean)
+      .join(" / ");
+
+    const estadoRaw = activoEstadoActual;
+    const estadoFormateado = estadoRaw
+      ? estadoRaw.replace(/_/g, " ").replace(/^\w/, c => c.toUpperCase())
+      : null;
+
+    const estadoPropiedad =
+      typeof data.propio === "boolean"
+        ? (data.propio ? "Propio" : "No propio")
+        : null;
+
+    // -------- SID --------
+    const sidParts = [];
+    addField(sidParts, "Código", codigoActivo);
+    addField(sidParts, "Estado actual", estadoFormateado);
+    addField(sidParts, "Ubicación", ubicacion);
+    addField(sidParts, "Propiedad", estadoPropiedad);
+    addField(sidParts, "Fecha instalación", data.fecha_instalacion);
+    addField(sidParts, "Año adquisición", data.anio_adquisicion);
+    addField(sidParts, "Instalado por", data.instalado_por);
+    addField(sidParts, "Observaciones", data.observaciones);
+
+    if (activoResumenSid) {
+      activoResumenSid.innerHTML =
+        sidParts.join("") || "<span class='muted'>Sin datos SID.</span>";
     }
 
-    // Instalador / responsable
-    if (data.instalador) {
-      partes.push(`<strong>Instalado por:</strong> ${data.instalador}`);
+    // -------- OCS --------
+    const ocsParts = [];
+    addField(ocsParts, "Nombre equipo", ocs.name);
+    addField(ocsParts, "Sistema operativo", [ocs.osname, ocs.osversion].filter(Boolean).join(" "));
+    addField(ocsParts, "Último inventario", ocs.lastdate);
+
+    // si los agregas en Flask, aparecerán:
+    addField(ocsParts, "IP", ocs.ipaddr);
+    addField(ocsParts, "Fabricante", ocs.manufacturer);
+    addField(ocsParts, "Modelo", ocs.model);
+    addField(ocsParts, "Serial", ocs.serial);
+
+    if (activoResumenOcs) {
+      activoResumenOcs.innerHTML =
+        ocsParts.join("") || "<span class='muted'>Sin datos OCS para este activo.</span>";
     }
 
-    // Ubicación física
-    if (data.ubicacion) {
-      partes.push(`<strong>Ubicación:</strong> ${data.ubicacion}`);
+    // JSON técnico (debug)
+    if (activoJson) {
+      activoJson.textContent = JSON.stringify(data, null, 2);
     }
-
-    // Campos originales de FakeStore (por si quieres mostrarlos)
-    const descripcion = data.descripcion || data.description;
-    if (descripcion) {
-      partes.push(`<strong>Descripción:</strong> ${descripcion}`);
-    }
-
-    const precio = data.precio !== undefined ? data.precio : data.price;
-    if (precio !== undefined) {
-      partes.push(`<strong>Precio (referencial):</strong> $${precio}`);
-    }
-
-    const categoria = data.categoria || data.category;
-    if (categoria) {
-      partes.push(`<strong>Categoría:</strong> ${categoria}`);
-    }
-
-    activoResumen.innerHTML = partes.join("<br>") || "Sin resumen legible.";
-    activoJson.textContent = JSON.stringify(data, null, 2);
 
     manualStatus.textContent = "Activo obtenido correctamente.";
     manualStatus.classList.add("success");
@@ -468,7 +557,86 @@ btnGenerarQR.addEventListener("click", async () => {
 
 
 // ==========================
-//  REPORTE DE ACTIVOS
+//  UI CAMBIO DE ESTADO
+// ==========================
+if (btnEditarEstado) {
+  btnEditarEstado.addEventListener("click", () => {
+    if (!activoCodigoActual) return;
+    if (estadoEditor) {
+      estadoEditor.classList.toggle("hidden");
+    }
+    if (estadoStatus) {
+      estadoStatus.textContent = "";
+      estadoStatus.className = "status";
+    }
+  });
+}
+
+if (btnGuardarEstado) {
+  btnGuardarEstado.addEventListener("click", async () => {
+    if (!accessToken) {
+      estadoStatus.textContent = "Debes iniciar sesión primero.";
+      estadoStatus.className = "status error";
+      return;
+    }
+
+    if (!activoCodigoActual) {
+      estadoStatus.textContent = "No hay activo seleccionado.";
+      estadoStatus.className = "status error";
+      return;
+    }
+
+    const nuevoEstado = selectEstado.value;
+
+    estadoStatus.textContent = "Actualizando estado...";
+    estadoStatus.className = "status";
+
+    try {
+      const res = await fetch(
+        API_BASE +
+          `/api/activos/${encodeURIComponent(activoCodigoActual)}/estado/`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + accessToken,
+          },
+          body: JSON.stringify({ estado: nuevoEstado }),
+        }
+      );
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.status === 401) {
+        hacerLogout("Tu sesión ha expirado o el token no es válido. Inicia sesión nuevamente.");
+        return;
+      }
+
+      if (!res.ok) {
+        const msg = data.error || data.detail || `Error ${res.status}`;
+        estadoStatus.textContent = msg;
+        estadoStatus.className = "status error";
+        return;
+      }
+
+      // OK -> actualizamos estado local y refrescamos la ficha
+      activoEstadoActual = nuevoEstado;
+
+      await consultarActivo(activoCodigoActual);
+
+      estadoStatus.textContent = "Estado actualizado correctamente.";
+      estadoStatus.className = "status success";
+    } catch (err) {
+      console.error("❌ Error al actualizar estado:", err);
+      estadoStatus.textContent = "Error de red al actualizar el estado.";
+      estadoStatus.className = "status error";
+    }
+  });
+}
+
+
+// ==========================
+//  REPORTE DE ACTIVOS + CSV
 // ==========================
 if (btnReporte) {
   console.log("🧩 Handler de Reporte de Activos activado correctamente.");
@@ -482,10 +650,14 @@ if (btnReporte) {
       return;
     }
 
+    // Reset estado
     reporteStatus.textContent = "Obteniendo reporte...";
     reporteStatus.className = "status";
-    reporteJson.textContent = "";
+    reporteJson.textContent = "Sin datos de reporte todavía…";
+    if (btnDescargarCsv) btnDescargarCsv.classList.add("hidden");
+    ultimoReporteActivos = null;
 
+    // Filtros
     const params = new URLSearchParams();
     const edificio = filtroEdificio.value.trim();
     const area = filtroArea.value.trim();
@@ -526,12 +698,38 @@ if (btnReporte) {
         return;
       }
 
-      // OK
-      reporteStatus.textContent = "Reporte obtenido correctamente.";
-      reporteStatus.className = "status success";
-      reporteJson.textContent = JSON.stringify(data, null, 2);
+      // Normalizamos: el backend podría enviar {activos:[...]} o un array directo
+      let activos = [];
+      if (Array.isArray(data)) {
+        activos = data;
+      } else if (Array.isArray(data.activos)) {
+        activos = data.activos;
+      } else if (Array.isArray(data.results)) {
+        activos = data.results;
+      }
 
-      console.log("✅ Reporte recibido:", data);
+      if (!activos.length) {
+        reporteStatus.textContent = "No se encontraron activos para ese filtro.";
+        reporteStatus.className = "status success";
+        reporteJson.textContent = "Sin datos de reporte…";
+        return;
+      }
+
+      // Guardamos el último reporte para el CSV
+      ultimoReporteActivos = activos;
+
+      // Mostramos el JSON técnico
+      reporteJson.textContent = JSON.stringify(activos, null, 2);
+
+      reporteStatus.textContent = `Reporte obtenido correctamente. Activos encontrados: ${activos.length}.`;
+      reporteStatus.className = "status success";
+
+      // Mostramos botón de descarga
+      if (btnDescargarCsv) {
+        btnDescargarCsv.classList.remove("hidden");
+      }
+
+      console.log("✅ Reporte recibido:", activos);
     } catch (err) {
       console.error("❌ Error al obtener reporte:", err);
       reporteStatus.textContent = "Error de red al obtener el reporte.";
@@ -539,6 +737,99 @@ if (btnReporte) {
       reporteJson.textContent = "";
     }
   });
+
+  // Click en "Descargar CSV"
+  if (btnDescargarCsv) {
+    btnDescargarCsv.addEventListener("click", () => {
+      if (!ultimoReporteActivos || !ultimoReporteActivos.length) {
+        alert("No hay datos de reporte para exportar.");
+        return;
+      }
+      descargarCsvActivos(ultimoReporteActivos);
+    });
+  }
 } else {
   console.warn("⚠️ btn-reporte no encontrado en el DOM");
+}
+
+
+/**
+ * Genera y descarga un CSV con los activos del reporte.
+ * Ajusta las columnas según lo que devuelva tu API Flask.
+ */
+function descargarCsvActivos(activos) {
+  // Definimos columnas detalladas: campos de sidbd + datos de OCS
+  const columnas = [
+    { header: "qr_valor",          path: "qr_valor" },
+    { header: "codigo",            path: "codigo" },
+    { header: "id_ocs_hardware",   path: "id_ocs_hardware" },
+
+    { header: "edificio",          path: "edificio" },
+    { header: "area",              path: "area" },
+    { header: "departamento",      path: "departamento" },
+
+    { header: "propio",            path: "propio" },
+    { header: "estado",            path: "estado" },       // incluye tu estado
+    { header: "fecha_instalacion", path: "fecha_instalacion" },
+    { header: "anio_adquisicion",  path: "anio_adquisicion" },
+    { header: "instalado_por",     path: "instalado_por" },
+    { header: "observaciones",     path: "observaciones" },
+
+    { header: "fecha_creacion",    path: "fecha_creacion" },
+    { header: "fecha_update",      path: "fecha_update" },
+
+    // Datos que vienen desde OCS (objeto anidado "ocs")
+    { header: "ocs_id",        path: "ocs.id" },
+    { header: "ocs_name",      path: "ocs.name" },
+    { header: "ocs_osname",    path: "ocs.osname" },
+    { header: "ocs_osversion", path: "ocs.osversion" },
+    { header: "ocs_lastdate",  path: "ocs.lastdate" }
+  ];
+
+  // Helper para leer propiedades anidadas tipo "ocs.osname"
+  function getByPath(obj, path) {
+    return path.split(".").reduce((acc, key) => {
+      if (acc && acc[key] !== undefined && acc[key] !== null) {
+        return acc[key];
+      }
+      return null;
+    }, obj);
+  }
+
+  const filas = [];
+
+  // Primera fila: encabezados
+  filas.push(columnas.map(c => c.header).join(";"));
+
+  // Filas de datos
+  for (const a of activos) {
+    const fila = columnas.map((col) => {
+      let v = getByPath(a, col.path);
+
+      // Formateo amigable para "propio"
+      if (col.path === "propio") {
+        if (v === 1 || v === true) v = "Propio";
+        else if (v === 0 || v === false) v = "No propio";
+      }
+
+      if (v === null || v === undefined) v = "";
+
+      const s = String(v).replace(/"/g, '""'); // escapamos comillas
+      return `"${s}"`;
+    });
+
+    filas.push(fila.join(";"));
+  }
+
+  const csv = filas.join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "reporte_activos_detallado.csv";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }

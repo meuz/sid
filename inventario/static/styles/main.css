@@ -1,108 +1,231 @@
+/* Layout general */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #f3f4f6;
+  background: radial-gradient(circle at top, #e5edff 0, #f3f4f6 45%, #f3f4f6 100%);
   margin: 0;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
   min-height: 100vh;
+  color: #111827;
+}
+
+.shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* Topbar */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(10px);
+  margin-bottom: 24px;
+}
+
+.topbar-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar-title {
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  color: #111827;
+}
+
+.topbar-subtitle {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+/* Contenido principal */
+.content {
+  padding: 16px 0 32px;
 }
 
 .container {
-  width: 95%;
-  max-width: 900px;
-  margin-top: 30px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 16px 45px rgba(15, 23, 42, 0.12);
   padding: 24px;
 }
 
-h1 {
-  margin-top: 0;
-  font-size: 1.6rem;
-  text-align: center;
+/* Cards / secciones */
+.card {
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  padding: 16px 16px 18px;
+  margin-bottom: 18px;
+}
+
+.card-centered {
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.card-header {
+  margin-bottom: 10px;
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Tipografía */
+h1,
+h2,
+h3 {
+  margin: 0;
 }
 
 .section-title {
   font-weight: 600;
-  margin: 16px 0 8px;
+  font-size: 1rem;
+  color: #111827;
 }
 
 .subtitle {
   font-size: 0.9rem;
-  margin-top: 0;
+  margin-top: 4px;
+  color: #6b7280;
 }
 
-.card {
-  border-radius: 10px;
-  border: 1px solid #e5e7eb;
-  padding: 16px;
-  margin-bottom: 16px;
-  background: #f9fafb;
+/* Grid */
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 18px;
 }
 
+.col {
+  min-width: 0;
+}
+
+/* Formularios */
 label {
   display: block;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   margin-bottom: 4px;
+  color: #4b5563;
 }
 
 input {
   width: 100%;
-  padding: 8px 10px;
-  border-radius: 6px;
+  padding: 9px 11px;
+  border-radius: 8px;
   border: 1px solid #d1d5db;
   margin-bottom: 10px;
   font-size: 0.95rem;
+  outline: none;
+  background: #f9fafb;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 
+input:focus {
+  border-color: #2563eb;
+  background: #ffffff;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.3);
+}
+
+/* Botones */
 .btn {
   border: none;
-  border-radius: 6px;
-  padding: 8px 14px;
-  font-size: 0.95rem;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 0.9rem;
   cursor: pointer;
-  background: #2563eb;
-  color: white;
   font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 0.15s ease, transform 0.05s ease,
+    box-shadow 0.15s ease, color 0.15s ease;
 }
 
-.btn.secondary {
-  background: #6b7280;
+.btn-primary {
+  background: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.25);
+}
+
+.btn-primary:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.btn-secondary:hover {
+  background: #d1d5db;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: #4b5563;
+  border: 1px solid #e5e7eb;
+}
+
+.btn-ghost:hover {
+  background: #f3f4f6;
 }
 
 .btn:disabled {
   opacity: 0.6;
   cursor: default;
+  transform: none;
+  box-shadow: none;
 }
 
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.col {
-  flex: 1;
-  min-width: 260px;
-}
-
-.hidden {
-  display: none !important;
-}
-
-#reader {
+.full-width {
   width: 100%;
-  max-width: 350px;
-  margin: 0 auto;
 }
 
+.button-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* Estados / mensajes */
 .status {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   margin-top: 6px;
-  color: #374151;
+  color: #4b5563;
 }
 
 .status.error {
@@ -113,15 +236,16 @@ input {
   color: #15803d;
 }
 
+/* Datos */
 .activo-data {
   font-family: "Consolas", "SF Mono", monospace;
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   white-space: pre-wrap;
   background: #111827;
   color: #e5e7eb;
-  padding: 12px;
-  border-radius: 8px;
-  max-height: 300px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  max-height: 260px;
   overflow: auto;
 }
 
@@ -130,12 +254,123 @@ input {
   margin-bottom: 8px;
 }
 
-.tag {
-  display: inline-block;
-  background: #dbeafe;
-  color: #1d4ed8;
-  padding: 2px 8px;
+/* QR preview */
+.qr-preview {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.qr-preview img {
+  width: 200px;
+  max-width: 100%;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 10px;
+  background: #ffffff;
+}
+
+/* Reader */
+#reader {
+  width: 100%;
+  max-width: 340px;
+  margin: 0 auto;
+}
+
+/* Utilidades */
+.hidden {
+  display: none !important;
+}
+
+.mt-8 {
+  margin-top: 8px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .shell {
+    padding: 12px;
+  }
+
+  .topbar {
+    border-radius: 14px;
+  }
+
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 16px;
+  }
+
+  .card {
+    padding: 14px 14px 16px;
+  }
+}
+
+/* Ficha limpia para Datos del activo */
+.field-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px dashed #e5e7eb;
+  font-size: 0.9rem;
+}
+
+.field-row:last-child {
+  border-bottom: none;
+}
+
+.field-label {
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.field-value {
+  color: #111827;
+  text-align: right;
+}
+
+.resumen .muted {
+  color: #9ca3af;
+  font-size: 0.85rem;
+}
+
+/* Cabecera con botón a la derecha solo para Datos del activo */
+.card-header-inline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Botón pequeño */
+.btn-sm {
+  font-size: 0.8rem;
+  padding: 6px 12px;
+}
+
+/* Editor de estado dentro de la card */
+.estado-editor {
+  margin: 6px 16px 0 16px;
+  padding-top: 8px;
+  border-top: 1px dashed #e5e7eb;
+}
+
+.estado-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.estado-row select {
+  padding: 7px 10px;
   border-radius: 999px;
-  font-size: 0.75rem;
-  margin-left: 4px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  font-size: 0.9rem;
 }

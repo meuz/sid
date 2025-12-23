@@ -8,119 +8,213 @@
   <link rel="stylesheet" href="{% static 'styles/main.css' %}" />
 </head>
 <body>
-  <div class="container">
-    <h1>
-      SID - Consulta de Activos
-      <span class="tag">Demo WebService</span>
-    </h1>
+  <div class="shell">
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <span class="topbar-title">SID</span>
+        <span class="topbar-subtitle">Consulta de activos</span>
+      </div>
+      <div class="topbar-right">
+        <span class="badge">Demo</span>
+        <button id="btn-logout" class="btn btn-ghost hidden">
+          Cerrar sesión
+        </button>
+      </div>
+    </header>
 
-    <div style="text-align: right; margin-bottom: 10px; color: red;">
-      <button id="btn-logout" class="btn secondary hidden">
-        Cerrar sesión
-      </button>
-    </div>
-    
-    <!-- LOGIN -->
-    <div id="login-section" class="card">
-      <div class="section-title">Inicio de sesión</div>
-      <p class="subtitle">
-        Ingresa con tu usuario y contraseña de Django para obtener un token JWT.
-      </p>
-      <label for="username">Usuario</label>
-      <input id="username" type="text" placeholder="ej: admin" />
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="content">
+      <div class="container">
 
-      <label for="password">Contraseña</label>
-      <input id="password" type="password" placeholder="••••••••" />
-
-      <button id="btn-login">Iniciar sesión</button>
-      <span id="login-status" class="status"></span>
-    </div>
-
-    <!-- APP MAIN -->
-    <div id="app-section" class="hidden">
-      <div class="row">
-        <!-- Columna QR + búsqueda manual -->
-        <div class="col">
-          <div class="card">
-            <div class="section-title">Escaneo de código QR</div>
+        <!-- LOGIN -->
+        <section id="login-section" class="card card-centered">
+          <div class="card-header">
+            <h2 class="section-title">Inicio de sesión</h2>
             <p class="subtitle">
-              El QR debe contener el <strong>código del activo</strong> (en esta demo, un número que coincide con el ID de FakeStoreAPI: 1, 2, 3, ...).
+              Ingresa con tu usuario y contraseña.
             </p>
-            <div id="reader"></div>
-            <button id="btn-start-scan" class="btn">Iniciar cámara</button>
-            <button id="btn-stop-scan" class="btn secondary">Detener cámara</button>
-            <div id="scan-status" class="status"></div>
           </div>
 
-          <div class="card">
-            <div class="section-title">Búsqueda manual</div>
-            <label for="codigo-manual">Código de activo</label>
-            <input id="codigo-manual" type="text" placeholder="Ej: 1, 2, 3..." />
-            <button id="btn-buscar" class="btn">Buscar activo</button>
-            <div id="manual-status" class="status"></div>
-          </div>
-        </div>
-        
-        <!-- Sección para crear qr unico -->
-        <div class="card">
-        <div class="section-title">Generar QR de un activo</div>
-            <p class="subtitle">
-                Ingresa el código del activo para generar su QR único.
-            </p>
+          <div class="card-body">
+            <label for="username">Usuario</label>
+            <input id="username" type="text" placeholder="ej: admin" />
 
-            <label for="codigo-qr">Código del activo</label>
-            <input id="codigo-qr" type="text" placeholder="Ej: 1, 2, 3..." />
+            <label for="password">Contraseña</label>
+            <input id="password" type="password" placeholder="••••••••" />
 
-            <button id="btn-generar-qr" class="btn">Generar QR</button>
-
-            <div id="qr-status" class="status"></div>
-
-            <div id="qr-preview" style="margin-top: 10px; text-align:center;"></div>
-
-            <a id="qr-download" href="#" download style="display:none;">
-                <button class="btn secondary" style="margin-top:10px;">Descargar QR</button>
-            </a>
-        </div>
-
-        <!-- Sección para mostrar un resumen de los datos del activo, más agradable a la vista -->
-        <div class="col">
-          <div class="card">
-            <div class="section-title">Datos del activo</div>
-            <div id="activo-resumen" class="resumen"></div>
-            <div id="activo-json" class="activo-data">Sin datos todavía…</div>
-          </div>
-        </div>
-                <!-- Sección de reporte de activos -->
-        <div class="col">
-          <div class="card">
-            <div class="section-title">Reporte de activos</div>
-            <p class="subtitle">
-              Puedes filtrar por edificio, área y departamento. Si dejas todo vacío,
-              se listarán todos los activos registrados.
-            </p>
-
-            <label for="filtro-edificio">Edificio</label>
-            <input id="filtro-edificio" type="text" placeholder="Ej: Edificio A" />
-
-            <label for="filtro-area">Área</label>
-            <input id="filtro-area" type="text" placeholder="Ej: Urgencias" />
-
-            <label for="filtro-departamento">Departamento</label>
-            <input id="filtro-departamento" type="text" placeholder="Ej: Box 1" />
-
-            <button id="btn-reporte" class="btn" style="margin-top:8px;">
-              Ver reporte
+            <button id="btn-login" class="btn btn-primary full-width">
+              Iniciar sesión
             </button>
 
-            <div id="reporte-status" class="status"></div>
-
-            <pre id="reporte-json" class="activo-data" style="margin-top:10px;">
-                Sin datos de reporte todavía…
-            </pre>
+            <span id="login-status" class="status"></span>
           </div>
-        </div>
+        </section>
+
+        <!-- APP MAIN -->
+        <!-- APP MAIN -->
+        <section id="app-section" class="hidden">
+          <div class="grid">
+            <!-- Columna izquierda: QR + datos + búsqueda + generar QR -->
+            <div class="col">
+              <!-- Escaneo QR -->
+              <div class="card">
+                <div class="card-header">
+                  <h2 class="section-title">Escaneo de código QR</h2>
+                  <p class="subtitle">
+                    El QR debe contener el <strong>código del activo</strong>.
+                  </p>
+                </div>
+                <div class="card-body">
+                  <div id="reader"></div>
+                  <div class="button-row">
+                    <button id="btn-start-scan" class="btn btn-primary">
+                      Iniciar cámara
+                    </button>
+                    <button id="btn-stop-scan" class="btn btn-secondary">
+                      Detener cámara
+                    </button>
+                  </div>
+                  <div id="scan-status" class="status"></div>
+                </div>
+              </div>
+
+              <!-- Búsqueda manual -->
+              <div class="card">
+                <div class="card-header">
+                  <h2 class="section-title">Búsqueda manual</h2>
+                </div>
+                <div class="card-body">
+                  <label for="codigo-manual">Código de activo</label>
+                  <input id="codigo-manual" type="text" placeholder="Ej: QRTEST001" />
+                  <button id="btn-buscar" class="btn btn-primary full-width">
+                    Buscar activo
+                  </button>
+                  <div id="manual-status" class="status"></div>
+                </div>
+              </div>
+
+              <!-- Datos del activo + botón Cambiar estado -->
+              <div class="card">
+                <div class="card-header card-header-inline">
+                  <h2 class="section-title">Datos del activo</h2>
+                  <button id="btn-editar-estado"
+                          class="btn btn-secondary btn-sm hidden">
+                    Cambiar estado
+                  </button>
+                </div>
+
+                <div class="card-body">
+                  <!-- Editor de estado (se muestra/oculta) -->
+                  <div id="estado-editor" class="estado-editor hidden">
+                    <label for="select-estado">Nuevo estado</label>
+                    <div class="estado-row">
+                      <select id="select-estado">
+                        <option value="activo">Activo</option>
+                        <option value="inactivo">Inactivo</option>
+                        <option value="en_mantencion">En mantención</option>
+                        <option value="de_baja">De baja</option>
+                      </select>
+
+                      <button id="btn-guardar-estado"
+                              class="btn btn-primary btn-sm">
+                        Guardar
+                      </button>
+                    </div>
+                    <span id="estado-status" class="status"></span>
+                  </div>
+
+                  <!-- SID -->
+                  <div class="resumen">
+                    <h3 class="section-title" style="margin-bottom:8px">SID</h3>
+                    <div id="activo-resumen-sid"></div>
+                  </div>
+
+                  <!-- OCS -->
+                  <div class="resumen" style="margin-top:12px;">
+                    <h3 class="section-title" style="margin-bottom:8px;">OCS Inventory</h3>
+                    <div id="activo-resumen-ocs"></div>
+                  </div>
+
+                  <!-- JSON crudo (solo debug) -->
+                  <details style="margin-top:12px;">
+                    <summary class="subtitle">Ver JSON técnico (debug)</summary>
+                    <pre id="activo-json" class="activo-data">Sin datos todavía…</pre>
+                  </details>
+                </div>
+              </div>
+
+              <!-- Generar QR -->
+              <div class="card">
+                <div class="card-header">
+                  <h2 class="section-title">Generar QR de un activo</h2>
+                  <p class="subtitle">
+                    Ingresa el código del activo para generar su QR único.
+                  </p>
+                </div>
+                <div class="card-body">
+                  <label for="codigo-qr">Código del activo</label>
+                  <input id="codigo-qr" type="text" placeholder="Ej: QRTEST001" />
+
+                  <button id="btn-generar-qr" class="btn btn-primary full-width">
+                    Generar QR
+                  </button>
+
+                  <div id="qr-status" class="status"></div>
+
+                  <div id="qr-preview" class="qr-preview"></div>
+
+                  <a id="qr-download" href="#" download style="display:none;">
+                    <button class="btn btn-secondary full-width mt-8">
+                      Descargar QR
+                    </button>
+                  </a>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Columna derecha: solo reporte de activos -->
+            <div class="col">
+              <div class="card">
+                <div class="card-header">
+                  <h2 class="section-title">Reporte de activos</h2>
+                  <p class="subtitle">
+                    Filtra por edificio, área y departamento o deja todo vacío
+                    para listar todos los activos registrados.
+                  </p>
+                </div>
+                <div class="card-body">
+                  <label for="filtro-edificio">Edificio</label>
+                  <input id="filtro-edificio" type="text" placeholder="Ej: Edificio A" />
+
+                  <label for="filtro-area">Área</label>
+                  <input id="filtro-area" type="text" placeholder="Ej: Urgencias" />
+
+                  <label for="filtro-departamento">Departamento</label>
+                  <input id="filtro-departamento" type="text" placeholder="Ej: Box 1" />
+
+                  <button id="btn-reporte" class="btn btn-primary full-width mt-8">
+                    Ver reporte
+                  </button>
+
+                  <button id="btn-descargar-csv"
+                          class="btn btn-secondary full-width mt-8 hidden">
+                    Descargar CSV
+                  </button>
+
+                  <div id="reporte-status" class="status"></div>
+
+                  <pre id="reporte-json" class="activo-data mt-8">
+                        Sin datos de reporte todavía…
+                  </pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>  
       </div>
-    </div>
+    </main>
   </div>
 
   <script src="https://unpkg.com/html5-qrcode"></script>

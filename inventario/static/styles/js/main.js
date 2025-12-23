@@ -91,7 +91,7 @@ function hacerLogout(mensaje) {
   if (activoResumenOcs) activoResumenOcs.innerHTML = "";
   if (activoJson) activoJson.textContent = "Sin datos todavía…";
 
-  // Reporte (ESTO ES LO QUE TE FALTA)
+  // Reporte
   if (reporteStatus) {
     reporteStatus.textContent = "";
     reporteStatus.className = "status";
@@ -313,7 +313,7 @@ async function consultarActivo(codigo) {
       estadoStatus.className = "status";
     }
 
-    // --------- Resumen amigable (ficha limpia) ----------
+    // --------- Resumen amigable ----------
     function addField(partes, label, value) {
       if (value === undefined || value === null || value === "") return;
       partes.push(
@@ -642,7 +642,7 @@ if (btnGuardarEstado) {
         return;
       }
 
-      // OK -> actualizamos estado local y refrescamos la ficha
+      // OK actualizamos estado local y refrescamos la ficha
       activoEstadoActual = nuevoEstado;
 
       await consultarActivo(activoCodigoActual);
@@ -781,11 +781,7 @@ if (btnReporte) {
   console.warn("⚠️ btn-reporte no encontrado en el DOM");
 }
 
-
-/**
- * Genera y descarga un CSV con los activos del reporte.
- * Ajusta las columnas según lo que devuelva tu API Flask.
- */
+// CAMPOS QUE INCLUYE EL CSV
 function descargarCsvActivos(activos) {
   // Definimos columnas detalladas: campos de sidbd + datos de OCS
   const columnas = [
@@ -843,7 +839,7 @@ function descargarCsvActivos(activos) {
 
       if (v === null || v === undefined) v = "";
 
-      const s = String(v).replace(/"/g, '""'); // escapamos comillas
+      const s = String(v).replace(/"/g, '""');
       return `"${s}"`;
     });
 

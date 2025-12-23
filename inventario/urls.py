@@ -8,11 +8,7 @@ urlpatterns = [
     path("activos/<codigo>/", ActivoSeguroView.as_view(), name="activo-seguro"),
 
     # PATCH /api/activos/<codigo>/estado/
-    path(
-        "activos/<codigo>/estado/",
-        actualizar_estado_activo,
-        name="activo-estado",
-    ),
+    path("activos/<codigo>/estado/", actualizar_estado_activo, name="activo-estado",),
 
     path("activos/<codigo>/qr/", ActivoQRSeguroView.as_view(), name="qr-seguro"),
     path("activos/<codigo>/qr/view/", QRPageView.as_view(), name="qr-view"),

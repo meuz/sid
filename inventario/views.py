@@ -2,8 +2,6 @@ import re
 import qrcode
 import io
 import requests
-import os
-import datetime
 
 from django.http import HttpResponse
 from django.views.generic import TemplateView
@@ -17,7 +15,7 @@ from rest_framework import permissions, status
 OCS_API_BASE = "http://192.168.1.10:5001/ocs-api"
 ESTADOS_VALIDOS = ["activo", "inactivo", "en_mantencion", "de_baja"]
 
-#  AUDITORÍA 
+#  AUDITORIA
 def registrar_evento(request, accion, descripcion):
     """
     Envía la auditoría al servidor OCS mediante el webservice Flask.
@@ -38,22 +36,22 @@ def registrar_evento(request, accion, descripcion):
         requests.post(url, json=payload, timeout=3)
 
     except Exception as e:
-        # No queremos que la app se caiga si falla la auditoría,
-        # solo lo mostramos en consola para depurar.
+        # para que la app no caiga si falla la auditoría,
+        # solo se muestra en consola para depurar.
         print("Error enviando auditoría al OCS API:", e)
 
-#  VALIDACIÓN DE CÓDIGO
+#  validacion de codigo
 def validar_codigo_activo(codigo):
     return re.fullmatch(r"[A-Za-z0-9_-]{1,50}", str(codigo)) is not None
 
-#  OBTENER ACTIVO DESDE WEBSERVICE (futuro: Flask OCS API)
+#  obtencion activo webservice
 def obtener_activo_bd(codigo):
 
     try:
         url = f"{OCS_API_BASE}/activos/{codigo}/"
         r = requests.get(url, timeout=3)
 
-        # Si Flask devuelve 404, 500, etc → no hay activo
+        # si Flask devuelve 404, 500, etc, no hay activo
         if r.status_code != 200:
             print("OCS API devolvió status", r.status_code, "para código", codigo)
             return None
@@ -61,7 +59,7 @@ def obtener_activo_bd(codigo):
         try:
             data = r.json()
         except ValueError:
-            # Respuesta no era JSON válido
+            # respuesta no era JSON valido
             print("Respuesta no JSON desde OCS API para código", codigo, "->", r.text[:200])
             return None
 
@@ -119,7 +117,7 @@ class ActivoSeguroView(APIView):
             )
             return Response({"error": "Código inválido."}, status=400)
 
-        # --- Obtener datos del activo ---
+        # obtener datos del activo
         activo = obtener_activo_bd(codigo)
 
         if not activo:
@@ -130,7 +128,7 @@ class ActivoSeguroView(APIView):
             )
             return Response({"error": "Activo no encontrado."}, status=404)
 
-        # --- Consulta exitosa ---
+        # consulta exitosa 
         registrar_evento(
             request,
             "consulta_activo_ok",
@@ -139,7 +137,7 @@ class ActivoSeguroView(APIView):
 
         return Response(activo)
 
-#  API: GENERACIÓN DE QR
+#  API generacion del QR
 class ActivoQRSeguroView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -162,14 +160,14 @@ class ActivoQRSeguroView(APIView):
             )
             return Response({"error": "Activo no existe"}, status=404)
 
-        # Registro de auditoría
+        # registro de auditoría
         registrar_evento(
             request,
             "qr_generado",
             f"Generó QR del activo {codigo}"
         )
 
-        # Generar QR
+        # generar QR
         qr = qrcode.QRCode(version=1, box_size=10, border=4)
         qr.add_data(str(codigo))
         qr.make(fit=True)
@@ -182,7 +180,7 @@ class ActivoQRSeguroView(APIView):
 
         return HttpResponse(buffer.getvalue(), content_type="image/png")
 
-#  VISTA PARA MOSTRAR UNA PÁGINA HTML CON EL QR
+#  mostrar el qr en un html diferente
 class QRPageView(TemplateView):
     template_name = "qr.html"
 

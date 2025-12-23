@@ -14,7 +14,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import permissions, status
 
-OCS_API_BASE = "http://192.168.1.9:5001/ocs-api"
+OCS_API_BASE = "http://192.168.1.10:5001/ocs-api"
 ESTADOS_VALIDOS = ["activo", "inactivo", "en_mantencion", "de_baja"]
 
 #  AUDITORÍA 

@@ -79,25 +79,43 @@ function hacerLogout(mensaje) {
   appSection.classList.add("hidden");
   loginSection.classList.remove("hidden");
 
-  // Limpiar estados
+  // ------------------------
+  // LIMPIAR SECCIONES
+  // ------------------------
   scanStatus.textContent = "";
   manualStatus.textContent = "";
   qrStatus.textContent = "";
+
+  // Activo
   if (activoResumenSid) activoResumenSid.innerHTML = "";
   if (activoResumenOcs) activoResumenOcs.innerHTML = "";
   if (activoJson) activoJson.textContent = "Sin datos todavía…";
 
+  // Reporte (ESTO ES LO QUE TE FALTA)
+  if (reporteStatus) {
+    reporteStatus.textContent = "";
+    reporteStatus.className = "status";
+  }
+  if (reporteResumen) {
+    reporteResumen.innerHTML = "";
+  }
+  if (reporteTabla) {
+    reporteTabla.innerHTML = "";
+  }
+  if (reporteJson) {
+    reporteJson.textContent = "Sin datos de reporte todavía…";
+  }
+  if (btnDescargarCsv) {
+    btnDescargarCsv.classList.add("hidden");
+  }
+  ultimoReporteActivos = null;
 
   // Reset de estado de activo
   activoCodigoActual = null;
   activoEstadoActual = null;
 
-  if (btnEditarEstado) {
-    btnEditarEstado.classList.add("hidden");
-  }
-  if (estadoEditor) {
-    estadoEditor.classList.add("hidden");
-  }
+  if (btnEditarEstado) btnEditarEstado.classList.add("hidden");
+  if (estadoEditor) estadoEditor.classList.add("hidden");
   if (estadoStatus) {
     estadoStatus.textContent = "";
     estadoStatus.className = "status";
@@ -106,6 +124,7 @@ function hacerLogout(mensaje) {
   // Ocultar botón logout
   btnLogout.classList.add("hidden");
 
+  // Mensaje final
   if (mensaje) {
     loginStatus.textContent = mensaje;
     loginStatus.className = "status error";
@@ -114,6 +133,7 @@ function hacerLogout(mensaje) {
     loginStatus.className = "status success";
   }
 }
+
 
 
 // ==========================

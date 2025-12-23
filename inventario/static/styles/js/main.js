@@ -769,7 +769,6 @@ if (btnReporte) {
 function descargarCsvActivos(activos) {
   // Definimos columnas detalladas: campos de sidbd + datos de OCS
   const columnas = [
-    { header: "qr_valor",          path: "qr_valor" },
     { header: "codigo",            path: "codigo" },
     { header: "id_ocs_hardware",   path: "id_ocs_hardware" },
 
@@ -778,7 +777,7 @@ function descargarCsvActivos(activos) {
     { header: "departamento",      path: "departamento" },
 
     { header: "propio",            path: "propio" },
-    { header: "estado",            path: "estado" },       // incluye tu estado
+    { header: "estado",            path: "estado" },
     { header: "fecha_instalacion", path: "fecha_instalacion" },
     { header: "anio_adquisicion",  path: "anio_adquisicion" },
     { header: "instalado_por",     path: "instalado_por" },
@@ -787,13 +786,14 @@ function descargarCsvActivos(activos) {
     { header: "fecha_creacion",    path: "fecha_creacion" },
     { header: "fecha_update",      path: "fecha_update" },
 
-    // Datos que vienen desde OCS (objeto anidado "ocs")
-    { header: "ocs_id",        path: "ocs.id" },
-    { header: "ocs_name",      path: "ocs.name" },
-    { header: "ocs_osname",    path: "ocs.osname" },
-    { header: "ocs_osversion", path: "ocs.osversion" },
-    { header: "ocs_lastdate",  path: "ocs.lastdate" }
+    // Campos planos que ya vienen desde tu JOIN en Flask:
+    { header: "ocs_id",        path: "id_ocs_hardware" },
+    { header: "ocs_name",      path: "nombre_equipo" },
+    { header: "ocs_osname",    path: "so" },
+    { header: "ocs_osversion", path: "so_version" },
+    { header: "ocs_lastdate",  path: "ultimo_contacto" }
   ];
+
 
   // Helper para leer propiedades anidadas tipo "ocs.osname"
   function getByPath(obj, path) {

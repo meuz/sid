@@ -17,7 +17,7 @@ from .permissions import IsAdminOrTecnico
 from .permissions import IsAdminOrJefe
 
 
-OCS_API_BASE = "http://192.168.1.10:5001/ocs-api"
+OCS_API_BASE = "http://172.20.10.3:5001/ocs-api"
 ESTADOS_VALIDOS = ["activo", "inactivo", "en_mantencion", "de_baja"]
 
 #  AUDITORIA
